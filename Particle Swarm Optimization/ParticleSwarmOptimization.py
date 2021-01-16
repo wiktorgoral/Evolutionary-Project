@@ -187,7 +187,7 @@ class WithNeighborsPSO(StandardPSO):
         self.phi_n = phi_n
         self.hops = hops
         self.n_neighbors = n_neighbors
-        self.neighbors = [random.sample(self.swarm_size, k=self.n_neighbors) for i in range(self.swarm_size)]
+        self.neighbors = [random.sample(range(self.swarm_size), k=self.n_neighbors) for i in range(self.swarm_size)]
     
     def update_velocity(self, swarm: List[FloatSolution]) -> None:
         for i in range(self.swarm_size):

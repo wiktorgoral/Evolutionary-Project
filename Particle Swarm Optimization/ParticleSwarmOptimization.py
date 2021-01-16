@@ -25,9 +25,9 @@ class StandardPSO(ParticleSwarmOptimization):
                  termination_criterion: TerminationCriterion = store.default_termination_criteria,
                  swarm_generator: Generator = store.default_generator,
                  swarm_evaluator: Evaluator = store.default_evaluator,
-                 omega: float = 1.0,
-                 phi_p: float = 2.0,
-                 phi_g: float = 2.0,
+                 omega: float = 0.8,
+                 phi_p: float = 1.0,
+                 phi_g: float = 1.0,
                  learning_rate: float = 1.0):
         """ This class implements a standard PSO algorithm.
         """
@@ -66,13 +66,7 @@ class StandardPSO(ParticleSwarmOptimization):
             particle.attributes['local_best'] = copy(particle)
 
     def initialize_velocity(self, swarm: List[FloatSolution]) -> None:
-        for i in range(self.swarm_size):
-            for var in range(swarm[i].number_of_variables):
-                lower_bound = self.problem.lower_bound[var]
-                upper_bound = self.problem.upper_bound[var]
-                abs_difference = abs(upper_bound - lower_bound)
-                velocity = random.uniform(-abs_difference, abs_difference)
-                self.speed[i][var] = velocity
+        pass
 
     def update_velocity(self, swarm: List[FloatSolution]) -> None:
         for i in range(self.swarm_size):
@@ -159,3 +153,77 @@ class StandardPSO(ParticleSwarmOptimization):
     
     def perturbation(self, swarm: List[FloatSolution]) -> None:
         pass
+
+
+class WithNeighborsPSO(StandardPSO):
+    
+    def __init__(self,
+                 problem: FloatProblem,
+                 swarm_size: int,
+                 leaders: Optional[BoundedArchive],
+                 termination_criterion: TerminationCriterion = store.default_termination_criteria,
+                 swarm_generator: Generator = store.default_generator,
+                 swarm_evaluator: Evaluator = store.default_evaluator,
+                 omega: float = 0.8,
+                 phi_p: float = 1.0,
+                 phi_g: float = 1.0,
+                 learning_rate: float = 1.0,
+                 phi_n: float = 1.0,
+                 n_neighbors: int = 2,
+                 hops: int = 1):
+        """ This class implements a standard PSO algorithm.
+        """
+        super(WithNeighborsPSO, self).__init__(
+            problem=problem,
+            swarm_size=swarm_size,
+            leaders=leaders,
+            termination_criterion=termination_criterion,
+            swarm_generator=swarm_generator,
+            swarm_evaluator=swarm_evaluator,
+            omega=omega,
+            phi_p = phi_p,
+            phi_g = phi_g,
+            learning_rate=learning_rate)
+        self.phi_n = phi_n
+        self.hops = hops
+        self.n_neighbors = n_neighbors
+        self.neighbors = [random.sample(self.swarm_size, k=self.n_neighbors) for i in range(self.swarm_size)]
+    
+    def update_velocity(self, swarm: List[FloatSolution]) -> None:
+        for i in range(self.swarm_size):
+            best_particle = copy(swarm[i].attributes['local_best'])
+            best_global = self.select_global_best()
+            best_neighbor = self.select_neighbor_best(i, swarm, self.neighbors)
+
+            for var in range(swarm[i].number_of_variables):
+                r_p = random.random()
+                r_g = random.random()
+                r_n = random.random()
+                self.speed[i][var] = self.omega * self.speed[i][var] + \
+                                     self.phi_p * r_p * (best_particle.variables[var] - swarm[i].variables[var]) + \
+                                     self.phi_g * r_g * (best_global.variables[var] - swarm[i].variables[var]) + \
+                                     self.phi_n * r_n * (best_neighbor.variables[var] - swarm[i].variables[var])
+    
+    def select_neighbor_best(self, particle: int, swarm: List[FloatSolution], neighbors: List[List[int]]) -> FloatSolution:
+        def flatten(xs):
+            return [item for sublist in xs for item in sublist]
+
+        def find_neighbors(i, hops):
+            if hops == 1:
+                return set(neighbors[i])
+            else:
+                return set(neighbors[i]) | set(flatten([find_neighbors(j, hops-1) for j in neighbors[i]]))
+        
+        neighborhood = [copy(swarm[i]) for i in find_neighbors(particle, self.hops)]
+        
+        # Find best neighbor.
+        current_best = 0
+        for i in range(1, len(neighborhood)):
+            flag = self.dominance_comparator.compare(
+                neighborhood[i],
+                neighborhood[current_best]
+            )
+            if flag != 1:
+                current_best = i
+        
+        return neighborhood[current_best]

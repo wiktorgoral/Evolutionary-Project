@@ -193,7 +193,7 @@ class WithNeighborsPSO(StandardPSO):
         for i in range(self.swarm_size):
             best_particle = copy(swarm[i].attributes['local_best'])
             best_global = self.select_global_best()
-            best_neighbor = self.select_neighbor_best(i, swarm, self.neighbors)
+            best_neighborhood = self.select_neighborhood_best(i, swarm, self.neighbors)
 
             for var in range(swarm[i].number_of_variables):
                 r_p = random.random()
@@ -202,9 +202,9 @@ class WithNeighborsPSO(StandardPSO):
                 self.speed[i][var] = self.omega * self.speed[i][var] + \
                                      self.phi_p * r_p * (best_particle.variables[var] - swarm[i].variables[var]) + \
                                      self.phi_g * r_g * (best_global.variables[var] - swarm[i].variables[var]) + \
-                                     self.phi_n * r_n * (best_neighbor.variables[var] - swarm[i].variables[var])
+                                     self.phi_n * r_n * (best_neighborhood.variables[var] - swarm[i].variables[var])
     
-    def select_neighbor_best(self, particle: int, swarm: List[FloatSolution], neighbors: List[List[int]]) -> FloatSolution:
+    def select_neighborhood_best(self, particle: int, swarm: List[FloatSolution], neighbors: List[List[int]]) -> FloatSolution:
         def flatten(xs):
             return [item for sublist in xs for item in sublist]
 
@@ -220,10 +220,10 @@ class WithNeighborsPSO(StandardPSO):
         current_best = 0
         for i in range(1, len(neighborhood)):
             flag = self.dominance_comparator.compare(
-                neighborhood[i],
-                neighborhood[current_best]
+                neighborhood[i].attributes['local_best'],
+                neighborhood[current_best].attributes['local_best']
             )
             if flag != 1:
                 current_best = i
         
-        return neighborhood[current_best]
+        return copy(neighborhood[current_best].attributes['local_best'])

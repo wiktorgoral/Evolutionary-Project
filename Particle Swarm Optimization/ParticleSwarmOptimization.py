@@ -168,9 +168,10 @@ class WithNeighborsPSO(StandardPSO):
                  phi_p: float = 1.0,
                  phi_g: float = 1.0,
                  learning_rate: float = 1.0,
-                 phi_n: float = 1.0,
-                 n_neighbors: int = 2,
-                 hops: int = 1):
+                 phi_n: float = 0.3,
+                 n_neighbors: int = 30,
+                 hops: int = 1,
+                 use_global: bool = False):
         """ This class implements a standard PSO algorithm.
         """
         super(WithNeighborsPSO, self).__init__(
@@ -185,6 +186,7 @@ class WithNeighborsPSO(StandardPSO):
             phi_g = phi_g,
             learning_rate=learning_rate)
         self.phi_n = phi_n
+        self.use_global = use_global
         self.hops = hops
         self.n_neighbors = n_neighbors
         self.neighbors = [random.sample(range(self.swarm_size), k=self.n_neighbors) for i in range(self.swarm_size)]
@@ -201,7 +203,7 @@ class WithNeighborsPSO(StandardPSO):
                 r_n = random.random()
                 self.speed[i][var] = self.omega * self.speed[i][var] + \
                                      self.phi_p * r_p * (best_particle.variables[var] - swarm[i].variables[var]) + \
-                                     self.phi_g * r_g * (best_global.variables[var] - swarm[i].variables[var]) + \
+                                     self.use_global * self.phi_g * r_g * (best_global.variables[var] - swarm[i].variables[var]) + \
                                      self.phi_n * r_n * (best_neighborhood.variables[var] - swarm[i].variables[var])
     
     def select_neighborhood_best(self, particle: int, swarm: List[FloatSolution], neighbors: List[List[int]]) -> FloatSolution:
@@ -220,10 +222,10 @@ class WithNeighborsPSO(StandardPSO):
         current_best = 0
         for i in range(1, len(neighborhood)):
             flag = self.dominance_comparator.compare(
-                neighborhood[i].attributes['local_best'],
-                neighborhood[current_best].attributes['local_best']
+                neighborhood[i],
+                neighborhood[current_best]
             )
             if flag != 1:
                 current_best = i
         
-        return copy(neighborhood[current_best].attributes['local_best'])
+        return copy(neighborhood[current_best])

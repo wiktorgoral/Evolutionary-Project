@@ -60,7 +60,7 @@ class Migration(Generic[S]):
 
 # ALGO
 
-problem = Rastrigin(50)
+
 
 
 class Islands:
@@ -68,17 +68,19 @@ class Islands:
     interval = 10
     islands_len = 2
     max_evaluations = 10000
+    problem = Rastrigin(50)
 
-    def __init__(self, islands_len, iterval, migration_rate, random_groups, random_destination, max_evaluations):
+    def __init__(self, islands_len, iterval, migration_rate, random_groups, random_destination, max_evaluations, problem):
         self.islands_len = islands_len
         self.iterval = iterval
         self.max_evaluations = max_evaluations
+        self.problem = problem
         self.migration = Migration(
             migration_rate, random_groups, random_destination)
         for i in range(islands_len):
             # possible to override problem later self.problem
             self.islands[str(i)] = GeneticAlgorithm(
-                problem=problem,
+                problem=self.problem,
                 population_size=100,
                 offspring_population_size=100,
                 mutation=UniformMutation(0.006, 20.0),
@@ -111,14 +113,3 @@ class Islands:
             # print('Solution: {}'.format(result.variables))
             # print('Fitness: {}'.format(result.objectives[0]))
             # print('Computing time: {}'.format(algo.total_computing_time))
-x = Islands(3, 10, 0.2, True, True, 1000)
-# porownac wyspy - porownac do algorytmu bazowego - jednej wyspy - podobna liczba osobnikow np. 50 i 5*10
-# w sensownej liczbie wymiarow
-# startegie emigracji/imigracji
-x.run()
-# You can access result of each island
-result = x.islands[str(0)].get_result()
-print('Algorithm: {}'.format(x.islands[str(0)].get_name()))
-print('Solution: {}'.format(result.variables))
-print('Fitness: {}'.format(result.objectives[0]))
-

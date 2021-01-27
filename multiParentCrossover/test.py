@@ -72,7 +72,7 @@ def evaluate(crosssover_algo, problem):
   sp.posthoc_dunn([transpose_list[0],transpose_list[1],transpose_list[-1]], p_adjust = 'holm')
 
 
-problem = Rastrigin(50)
+problem = Rastrigin(10)
 
 
 print("DifferentialEvolutionCrossover")

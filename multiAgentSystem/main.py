@@ -102,7 +102,6 @@ class Emas(Algorithm[S, R]):
             solutions_island = self.death(solutions_island)
             new_solution.append(solutions_island)
 
-        print("Fitness: " + str(min([agent.fitness() for island in self.solutions for agent in island])))
         self.solutions = self.move_to_another_island(new_solution)
 
     def meet(self, island):
@@ -175,7 +174,7 @@ class Emas(Algorithm[S, R]):
         self.observable.notify_all(**observable_data)
 
 
-def main():
+"""def main():
     problem = Knapsack(from_file=True, filename='resources/KnapsackInstance_500_1_19.kp')
 
     algorithm = Emas(
@@ -206,7 +205,7 @@ def main():
     print("Best oof the best:")
     print('Solution: {}'.format(best_agent.solution.variables))
     print('Fitness: {}'.format(-best_agent.solution.objectives[0]))
-    print('Energy: {}'.format(best_agent.energy))
+    print('Energy: {}'.format(best_agent.energy))"""
 
 
 if __name__ == "__main__":

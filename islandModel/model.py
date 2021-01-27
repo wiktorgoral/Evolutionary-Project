@@ -91,6 +91,9 @@ class Islands:
             )
         print(self.islands)
 
+    def get_name(self) -> str:
+        return 'Islands'
+
     def run(self):
         x = 0
         new_populations = {}

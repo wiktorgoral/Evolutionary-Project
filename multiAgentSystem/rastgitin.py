@@ -5,7 +5,7 @@ from jmetal.util.termination_criterion import StoppingByEvaluations
 from main import Emas
 
 if __name__ == '__main__':
-    problem = Rastrigin(100)
+    problem = Rastrigin(10)
 
     algorithm = Emas(
         number_of_islands=10,

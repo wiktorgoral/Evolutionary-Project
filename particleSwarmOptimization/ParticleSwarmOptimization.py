@@ -146,7 +146,7 @@ class StandardPSO(ParticleSwarmOptimization):
         self.observable.notify_all(**observable_data)
 
     def get_result(self) -> List[FloatSolution]:
-        return self.leaders.solution_list
+        return self.leaders.solution_list[0]
 
     def get_name(self) -> str:
         return 'StandardPSO'

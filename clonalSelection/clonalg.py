@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-
+"""
+Project:
+- Clonal selection immunological algorithm
+"""
 import numpy as np
 from copy import copy
 from typing import TypeVar, List
@@ -21,6 +24,7 @@ class CloneAlg(EvolutionaryAlgorithm[S, R]):
                  population_size: int,
                  offspring_population_size: int,
                  mutation: Mutation,
+                 cloning_param: float,
                  termination_criterion: TerminationCriterion,
                  population_generator: Generator = RandomGenerator(),
                  population_evaluator: Evaluator = SequentialEvaluator()):
@@ -32,12 +36,14 @@ class CloneAlg(EvolutionaryAlgorithm[S, R]):
         self.offspring_population_size = offspring_population_size
 
         self.mutation_operator = mutation
+        self.cloning_param = cloning_param
 
         self.population_generator = population_generator
         self.population_evaluator = population_evaluator
 
         self.termination_criterion = termination_criterion
         self.observable.register(termination_criterion)
+
 
     def create_initial_solutions(self) -> List[S]:
         return [self.population_generator.new(self.problem)
@@ -64,7 +70,7 @@ class CloneAlg(EvolutionaryAlgorithm[S, R]):
         overall_fitness = np.mean([solution.objectives[0] for solution in population])
         for solution in population:
             fitness = solution.objectives[0]
-            for j in range(int(self.offspring_population_size * 0.1 * (fitness / overall_fitness))): # make clones based on fitness - it could be applied better
+            for j in range(int(self.offspring_population_size * self.cloning_param * (fitness / overall_fitness))): # make clones based on fitness - it could be applied better
                 new_solution = copy(solution)
                 offspring_population.append(self.mutation_operator.execute(new_solution)) # mutate clones
 
@@ -83,6 +89,9 @@ class CloneAlg(EvolutionaryAlgorithm[S, R]):
 
     def get_result(self) -> R:
         return self.solutions[0]
+
+    def get_cloning_param(self):
+        return self.cloning_param
 
     def get_name(self) -> str:
         return 'ClonAlg'
